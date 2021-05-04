@@ -3,6 +3,7 @@ import random
 from joblib import Parallel, delayed
 import time
 from param import *
+import math
 
 
 def Random_Regular_Sparse_Matrix(n,m,d_v):
@@ -94,6 +95,21 @@ def c_to_v_messages(c_val,Temp_N_c,v,allv_to_c_pre_messages,delta):
 	messages = num/denum
 	return messages
 
+"""
+def compute_Lcv(allc_to_v_messages, cn_connection):
+	LCV = np.array([0 for v in range(len(cn_connection))])
+	x = 0
+	for v in (cn_connection):
+		Temp_prob = np.array([1 - q, q])
+		for i in range(len(N_v[v])):
+			Temp_prob[0] *= allc_to_v_messages[v][i][0]
+			Temp_prob[1] *= allc_to_v_messages[v][i][1]
+		L_c_v = math.log(Temp_prob[1] / Temp_prob[0])
+		LCV[x] = L_c_v
+		x +=1
+	return LCV
+"""
+
 def Compute_LLR(n,q,N_v,allc_to_v_messages):
 	LLR = np.array([0 for v in range(n)])
 	for v in range(n):
@@ -132,18 +148,16 @@ def BP_Flooding(y_hat,n,m,k,N_c,N_v,q,delta,no_iter):
 				#print()
 			
 			LLR = Compute_LLR(n,q,N_v,allc_to_v_messages)
-			if L1_norm(LLR,Pre_LLR)<=0.001:
-				break
-			else:
-				for i in range(n):
-					Pre_LLR[i] = LLR[i]
-				for v in range(n):
-					Temp_N_v = N_v[v]
-					for c in Temp_N_v:
-						Temp_mesages = v_to_c_message(Temp_N_v,c,allc_to_v_messages[v],q)
-						v_index = np.where(N_c[c]==v)
-						allv_to_c_messages[c][v_index[0][0]][0] = Temp_mesages[0]
-						allv_to_c_messages[c][v_index[0][0]][1] = Temp_mesages[1]
+
+			for i in range(n):
+				Pre_LLR[i] = LLR[i]
+			for v in range(n):
+				Temp_N_v = N_v[v]
+				for c in Temp_N_v:
+					Temp_mesages = v_to_c_message(Temp_N_v,c,allc_to_v_messages[v],q)
+					v_index = np.where(N_c[c]==v)
+					allv_to_c_messages[c][v_index[0][0]][0] = Temp_mesages[0]
+					allv_to_c_messages[c][v_index[0][0]][1] = Temp_mesages[1]
 		
 	x_hat1 = LLR>=0
 	x_hat1 = x_hat1.astype(int)
@@ -156,18 +170,7 @@ def BP_Flooding(y_hat,n,m,k,N_c,N_v,q,delta,no_iter):
 	
 	return I_hat1, I_hat2
 
-"""
-n = 150 # number of people in the population
-m = 50 # number of tests
-k = 5 # number of infected people 
-delta = 0.05 # crossover probability of BSC channel
-q = k/n # probability of an individual to be infected
-no_iter = 10 # number of BP iterations
-no_trials = 1024 # number of simulation trials
-#d_v = 3 # number of 1's per column for regular sparse testing matrix
-#H = Random_Regular_Sparse_Matrix(n,m,d_v)
-nu = np.log(2) # nu/k is the probability that an entry in Bernoulli testing matrix is 1
-"""
+
 H = Random_Bernoulli_Matrix(n,m,k,nu) # Bernoulli testing matrix
 #H = np.load('HMatrixn100m20k2.npy')
 

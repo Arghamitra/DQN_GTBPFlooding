@@ -22,8 +22,6 @@ class DeepQNetwork(nn.Module):
         self.to(self.device)
 
     def forward(self, state):
-        f=5
-
         conv1 = F.relu(self.fc1(state))
         conv2 = F.relu(self.fc2(conv1))
         actions = (self.fc3(conv2))
@@ -77,9 +75,12 @@ class Agent():
 
         self.mem_cntr +=1
 
-    def choose_action(self, observation):
+    def choose_action(self, observation, epsilon = None):
 
-        if np.random.rand() > self.epsilon:
+        if epsilon == None:
+            epsilon = self.epsilon
+
+        if np.random.rand() > epsilon:
             if use_dtype == 'float64':
                 state = T.tensor([observation], dtype=T.float64).to(self.Q_eval.device)
             elif use_dtype == 'float32':
