@@ -10,7 +10,7 @@ q = k / n  # probability of an individual to be infected
 #no_iter = 10  # number of BP iterations
 #no_trials = 1024  # number of simulation trials
 no_iter = 101  # number of BP iterations
-no_trials = 120  # number of simulation trials
+no_trials = 10  # number of simulation trials
 
 # d_v = 3 # number of 1's per column for regular sparse testing matrix
 # H = Random_Regular_Sparse_Matrix(n,m,d_v)

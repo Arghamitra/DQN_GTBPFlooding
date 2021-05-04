@@ -41,7 +41,6 @@ def training():
         result = env.CodeRunner(trial)
         results.append(result)
         scores.append(score)
-        eps_history.append(agent.epsilon)
         avg_score = np.mean(scores[-100:])
         trials.append(trial)
         print('episode', trial, 'score %.2f' %score, 'average score %.2f' %avg_score,
@@ -55,8 +54,9 @@ def training():
     plt.xlabel('Trials')
     plt.ylabel('Reward')
     plt.grid()
+    plt.title('Training trial vs reward')
     trimester = time.strftime("_%Y_%m_%d-%H__%M_%S")
-    plt.savefig('./pic/DQN_' + str(no_trials) + '_' + (trimester) + '.png')
+    plt.savefig('./pic/TrnS_DQN_' + str(no_trials) + '_' + (trimester) + '.png')
 
     print("--- %s seconds ---" % (time.time() - start_time))
     env.show_result(results)
@@ -74,20 +74,22 @@ def handle_agents(opt='save', agents = None):
 
 def testing():
     print('___________TESTING_____________')
-    agents = handle_agents(opt='load')
+    agent = handle_agents(opt='load')
+
     scores, eps_history = [], []
     start_time = time.time()
     results = []
     trials = []
+
     for trial in range(no_trials):
-        env = Environment(trial,  status = 'test')
+        env = Environment(trial, status='test')
         score = 0
         done = False
         observation = env.reset()
         i = 0
-        for idx_done in range(no_iter):
+        while not done:
             i += 1
-            action = agents[idx_done].choose_action(observation, epsilon = 0)
+            action = agent.choose_action(observation)
             observation_, reward, done, info = env.step(action)
             score += reward
             observation = observation_
@@ -95,12 +97,13 @@ def testing():
         result = env.CodeRunner(trial)
         results.append(result)
         scores.append(score)
-        avg_score = np.mean(scores)
+        avg_score = np.mean(scores[-100:])
         trials.append(trial)
         print('episode', trial, 'score %.2f' % score, 'average score %.2f' % avg_score,
-              'epsilon %.2f' % agents[idx_done].epsilon)
+              'epsilon %.4f' % agent.epsilon)
 
     mvn_score = moving_average(scores, 250)
+
     plt.figure(figsize=(5, 5), dpi=100)
     plt.plot(trials, scores, label='Episodic Average')
     plt.plot(mvn_score, label='Moving Average')
@@ -109,10 +112,11 @@ def testing():
     plt.grid()
     plt.title('Testing trial vs reward')
     trimester = time.strftime("_%Y_%m_%d-%H__%M_%S")
-    plt.savefig('./pic/TS_DQN_' + str(no_trials) + '_' + (trimester) + '.png')
+    plt.savefig('./pic/TstS_DQN_' + str(no_trials) + '_' + (trimester) + '.png')
 
-    print("--- %s TESTING seconds ---" % (time.time() - start_time))
+    print("--- %s seconds ---" % (time.time() - start_time))
     env.show_result(results)
+
 
 if __name__ == '__main__':
     training()

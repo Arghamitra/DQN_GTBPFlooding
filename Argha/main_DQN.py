@@ -5,7 +5,13 @@ from param import *
 import matplotlib.pyplot as plt
 import pickle
 
-#no_trials = 1
+gamma=0.99
+epsilon=0.5
+batch_size= 16
+lr=0.03
+print('gamma=', gamma, 'starting epsilon=',
+      epsilon, 'batch size', batch_size, 'lr', lr)
+
 def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
 
@@ -13,17 +19,16 @@ def training():
     print('___________TRAINING______________')
     agents = []
     for idx_done in range(no_iter):
-        agent = Agent(gamma=0.99, epsilon=0.5, batch_size= 16, n_actions=m,
-                  eps_end=0.01, input_dims=[m], lr=0.03)
+        agent = Agent(gamma=gamma, epsilon=epsilon, batch_size=batch_size, n_actions=m,
+                  eps_end=0.01, input_dims=[m], lr=lr)
         agents.append(agent)
-
     scores, eps_history = [], []
     start_time = time.time()
     results = []
     trials = []
 
     for trial in range(no_trials):
-        env = Environment(trial)
+        env = Environment(trial,  status = 'train')
         score = 0
         done = False
         observation = env.reset()
@@ -47,7 +52,7 @@ def training():
         avg_score = np.mean(scores)
         trials.append(trial)
         print('episode', trial, 'score %.2f' %score, 'average score %.2f' %avg_score,
-              'epsilon %.2f' %agents[idx_done].epsilon)
+              'epsilon %.4f' %agents[idx_done].epsilon)
 
 
     mvn_score = moving_average(scores, 250)
@@ -86,7 +91,7 @@ def testing():
     results = []
     trials = []
     for trial in range(no_trials):
-        env = Environment(trial)
+        env = Environment(trial,  status = 'test')
         score = 0
         done = False
         observation = env.reset()

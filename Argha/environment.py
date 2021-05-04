@@ -3,15 +3,19 @@ from GTBPFloodingParallel import *
 from param import *
 
 class Environment:
-    def __init__(self, trial):
+    def __init__(self, trial, status):
         self.previous_LLR = np.array([0.0 for v in range(n)])
         self.previous_LCV = []
-        self.trial = trial
+        if status == 'test':
+            self.trial = trial+500
+        else:
+            self.trial = trial
         self._step = 0
         self.prim_valus()
 
 
     def prim_valus(self):
+
         np.random.seed(self.trial)
         # x = a binary vector of length n, representing the status of individuals in the population
         x = np.array([0 for i in range(n)])
