@@ -10,9 +10,10 @@ def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
 
 def training():
+    print('___________TRAINING______________')
     agents = []
     for idx_done in range(no_iter):
-        agent = Agent(gamma=0.99, epsilon=1, batch_size=64, n_actions=m,
+        agent = Agent(gamma=0.99, epsilon=0.5, batch_size= 16, n_actions=m,
                   eps_end=0.01, input_dims=[m], lr=0.03)
         agents.append(agent)
 
@@ -78,6 +79,7 @@ def handle_agents(opt='save', agents = None):
 
 
 def testing():
+    print('___________TESTING_____________')
     agents = handle_agents(opt='load')
     scores, eps_history = [], []
     start_time = time.time()

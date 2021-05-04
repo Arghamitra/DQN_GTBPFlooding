@@ -43,7 +43,7 @@ class Environment:
         Pre_LLR = Compute_LLR(n, q, N_v, self.allc_to_v_messages)
         self.previous_LLR = Pre_LLR
 
-        self.previous_LCV = self.LCV()
+        #self.previous_LCV = self.LCV()
 
         # calculation state: eqn 6 (midterm report)
         for c in range(m):
@@ -52,21 +52,6 @@ class Environment:
             states.append(state)
         observation = states
         return observation
-
-    def LCV(self):
-        all_LCV = []
-        for c in range(m):
-            y = 0
-            c_val = self.y_hat[c]
-            Temp_N_c = N_c[c]
-            LCV = np.array([0.0 for v in range(len(Temp_N_c))])
-            for v in Temp_N_c:
-                Temp_mesages = c_to_v_messages(c_val, Temp_N_c, v, self.allv_to_c_messages[c], delta)
-                ration = math.log(Temp_mesages[1] / Temp_mesages[0])
-                LCV[y] = ration
-                y +=1
-            all_LCV.append(LCV)
-        return all_LCV
 
 
     def done_flag(self, LLR):
@@ -93,12 +78,28 @@ class Environment:
         states = []
         c_val = self.y_hat[action]
         Temp_N_c = N_c[action]
+
+        LCV = np.array([0.0 for v in range(len(Temp_N_c))])
+        pre_LCV = np.array([0.0 for v in range(len(Temp_N_c))])
+        y = 0
+
         for v in Temp_N_c:
             Temp_N_v = N_v[v]
             Temp_mesages = c_to_v_messages(c_val, Temp_N_c, v, self.allv_to_c_messages[action], delta)
             c_index = np.where(N_v[v] == action)
+
+            pre_msg_0 = self.allc_to_v_messages[v][c_index[0][0]][0]
+            pre_msg_1 = self.allc_to_v_messages[v][c_index[0][0]][1]
+
             self.allc_to_v_messages[v][c_index[0][0]][0] = Temp_mesages[0]
             self.allc_to_v_messages[v][c_index[0][0]][1] = Temp_mesages[1]
+
+            pre_ratio = math.log(pre_msg_1 / pre_msg_0)
+            ration = math.log(Temp_mesages[1] / Temp_mesages[0])
+
+            pre_LCV[y] = pre_ratio
+            LCV[y] = ration
+            y += 1
 
             for c in Temp_N_v:
                 Temp_mesages = v_to_c_message(Temp_N_v, c, self.allc_to_v_messages[v], q)
@@ -112,7 +113,7 @@ class Environment:
         except:
             f =3
 
-        new_LCV = self.LCV()
+        #new_LCV = self.LCV()
         # calculation state: eqn 6 (midterm report)
         for c in range(m):
             cn_connection = N_c[c]
@@ -122,13 +123,12 @@ class Environment:
 
         #reward
         #crct_cn_cnctn = N_c[action]
-        reward = self.reward(new_LCV[action], self.previous_LCV[action])
+        reward = self.reward(LCV, pre_LCV)
 
         info = 0
-        done = self.done_flag(self, LLR)
+        done = self.done_flag(LLR)
 
         self.previous_LLR = LLR
-        self.previous_LCV = new_LCV
         return observation, reward, done, info
 
 
@@ -184,7 +184,10 @@ class Environment:
         print('Unknown k: False negative rate = {}, False positive rate = {}'.format(FNR1, FPR1))
         print('Known k: False negative rate = {}, False positive rate = {}'.format(FNR2, FPR2))
 
-    #noy using this function
+
+
+
+    #XXXXXXXXXXXXXXX NOT using these function XXXXXXXXXXXXXXXXXXXXXXXXXXXX
     def new_iter_LLR(self):
         done = False
         for c in range(m):
@@ -211,4 +214,19 @@ class Environment:
                     self.allv_to_c_messages[c][v_index[0][0]][1] = Temp_mesages[1]
 
         return LLR, done
+
+    def LCV(self):
+        all_LCV = []
+        for c in range(m):
+            y = 0
+            c_val = self.y_hat[c]
+            Temp_N_c = N_c[c]
+            LCV = np.array([0.0 for v in range(len(Temp_N_c))])
+            for v in Temp_N_c:
+                Temp_mesages = c_to_v_messages(c_val, Temp_N_c, v, self.allv_to_c_messages[c], delta)
+                ration = math.log(Temp_mesages[1] / Temp_mesages[0])
+                LCV[y] = ration
+                y +=1
+            all_LCV.append(LCV)
+        return all_LCV
 
