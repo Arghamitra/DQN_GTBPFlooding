@@ -3,12 +3,13 @@ import time
 from environment import Environment
 from param import *
 import matplotlib.pyplot as plt
-import pickle
+import dill
 
-gamma=0.99
-epsilon=0.5
+gamma = 0.99
+epsilon = 1
 batch_size= 16
 lr=0.03
+print('EPISODE', no_trials)
 print('gamma=', gamma, 'starting epsilon=',
       epsilon, 'batch size', batch_size, 'lr', lr)
 
@@ -75,10 +76,10 @@ def handle_agents(opt='save', agents = None):
     path = 'all_agents.pkl'
     if opt == 'save':
         with open(path, 'wb') as f:
-            pickle.dump(agents, f)
+            dill.dump(agents, f)
     elif opt == 'load':
         with open (path, 'rb') as f:
-            agents = pickle.load(f)
+            agents = dill.load(f)
             return agents
 
 
