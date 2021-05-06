@@ -3,7 +3,7 @@ from GTBPFloodingParallel import *
 from param import *
 
 class Environment:
-    def __init__(self, trial, status):
+    def __init__(self, trial, status, state_asnp = False):
         self.previous_LLR = np.array([0.0 for v in range(n)])
         self.previous_LCV = []
         if status == 'test':
@@ -13,6 +13,12 @@ class Environment:
         self._step = 0
         self.prim_valus()
 
+        self.state_asnp = state_asnp
+        # new env add
+        #self.action_space.n = m
+
+    def seed(self, val):
+        pass
 
     def prim_valus(self):
 
@@ -55,7 +61,10 @@ class Environment:
             state = self.DQN_state_maker(cn_connection, Pre_LLR)
             states.append(state)
         observation = states
-        return observation
+        if self.state_asnp:
+            return np.array(observation)
+        else:
+            return observation
 
 
     def done_flag(self, LLR):
@@ -133,6 +142,9 @@ class Environment:
         done = self.done_flag(LLR)
 
         self.previous_LLR = LLR
+
+        if self.state_asnp:
+            observation = np.array(observation)
         return observation, reward, done, info
 
 
@@ -175,7 +187,7 @@ class Environment:
 
         return [SSR1, SSR2, FNR1, FPR1, FNR2, FPR2]
 
-    def show_result(self, results):
+    def show_result(self, results, no_trials):
         SSR1 = np.mean(np.array([results[i][0] for i in range(no_trials)]))
         SSR2 = np.mean(np.array([results[i][1] for i in range(no_trials)]))
         FNR1 = np.mean(np.array([results[i][2] for i in range(no_trials)]))
